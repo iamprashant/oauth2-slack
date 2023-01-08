@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit backupGlobals="false"
+         backupStaticAttributes="false"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+         convertErrorsToExceptions="true"
+         convertNoticesToExceptions="true"
+         convertWarningsToExceptions="true"
+         processIsolation="false"
+         stopOnFailure="false"
+        >
+    <logging>
+        <testdoxHtml outputFile="./build/coverage/log/coverage.html"/>
+        <testdoxXml outputFile="./build/coverage/log/coverage.xml"/>
+        <text outputFile="./build/coverage/log/coverage.txt"/>
+    </logging>
+    
+    <testsuites>
+        <testsuite name="Package Test Suite">
+            <directory suffix=".php">./test/</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>

@@ -1,0 +1,42 @@
+{
+    "name": "iamprashant/slack-oauth2",
+    "description": "Slack OAuth 2.0 Client Provider for The PHP League OAuth2-Client",
+    "keywords": [
+        "oauth",
+        "oauth2",
+        "authorization",
+        "authentication",
+        "idp",
+        "identity",
+        "sso",
+        "single sign on",
+        "slack",
+        "slack api"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Prashant Srivastav",
+            "email": "p_srivastav@outlook.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.4.0",
+        "league/oauth2-client": "2.6.1"
+    },
+    "require-dev": {
+        "mockery/mockery": "1.5.1",
+        "squizlabs/php_codesniffer": "3.7.1",
+        "phpunit/phpunit": "9.5.27"
+    },
+    "autoload": {
+        "psr-4": {
+            "IamPrashant\\OAuth2\\Client\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "IamPrashant\\OAuth2\\Client\\Test\\": "test/src/"
+        }
+    }
+}
