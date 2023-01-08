@@ -3,6 +3,8 @@
 namespace IamPrashant\OAuth2\Client\Provider;
 
 use IamPrashant\OAuth2\Client\Provider\Exception\SlackProviderException;
+use IamPrashant\OAuth2\Client\Resource\SlackResourceAuthorizedUser;
+use IamPrashant\OAuth2\Client\Resource\SlackResourceOwner;
 use IamPrashant\OAuth2\Client\Token\SlackAccessToken;
 use League\OAuth2\Client\Grant\AbstractGrant;
 use League\OAuth2\Client\Provider\AbstractProvider;
@@ -10,7 +12,7 @@ use League\OAuth2\Client\Token\AccessToken;
 use Psr\Http\Message\ResponseInterface;
 
 /**
- * Class SlackResourceOwner
+ * Class Slack
  *
  * @author Prashant Srivastav<p_srivastav@outlook.com>
  *
@@ -20,12 +22,11 @@ class Slack extends AbstractProvider
 
     const AUTHORIZATION_URL = 'https://slack.com/oauth/v2/authorize';
     const ACCESS_TOKEN_URL = 'https://slack.com/api/oauth.v2.access';
-    const AUTHORIZED_USER_URL = 'https://slack.com/api/auth.test';
+    const AUTHORIZED_USER_URL = 'https://slack.com/api/users.info';
 
     public function __construct(array $options = [], array $collaborators = [])
     {
         parent::__construct($options, $collaborators);
-
     }
 
     /**
@@ -51,6 +52,18 @@ class Slack extends AbstractProvider
     }
 
     /**
+     * Requests and returns the resource owner of given access token.
+     *
+     * @param  AccessToken $token
+     * @return SlackResourceOwner
+     */
+    public function getResourceOwner(AccessToken $token)
+    {
+        $response = $this->fetchResourceOwnerDetails($token);
+        return $this->createResourceOwner($response, $token);
+    }
+
+    /**
      * Returns the URL for requesting the resource owner's details.
      *
      * @param AccessToken $token
@@ -63,8 +76,7 @@ class Slack extends AbstractProvider
         $params = [
             'user' => $authorizedUser->getId(),
         ];
-
-        return 'https://slack.com/api/users.info?' . http_build_query($params);
+        return self::AUTHORIZED_USER_URL . '?' . http_build_query($params);
     }
 
     /**
@@ -101,19 +113,17 @@ class Slack extends AbstractProvider
      */
     protected function getDefaultScopes(): array
     {
-        return ["commands", "users:read", "incoming-webhook"];
+        return ["commands", "users.profile:read", "incoming-webhook"];
     }
 
     /**
-     * @param AccessToken $token
+     * @param SlackAccessToken $token
      *
      * @return mixed
      */
-    public function fetchAuthorizedUserDetails(AccessToken $token)
+    public function fetchAuthorizedUserDetails(SlackAccessToken $token): SlackResourceAuthorizedUser
     {
-        // $url = $this->get();
-        $request = $this->getAuthenticatedRequest(self::METHOD_GET, self::AUTHORIZED_USER_URL, $token);
-        return $this->getParsedResponse($request);
+        return $token->getAuthedUser();
     }
 
     /**
@@ -121,20 +131,9 @@ class Slack extends AbstractProvider
      *
      * @return SlackAuthorizedUser
      */
-    public function getAuthorizedUser(AccessToken $token): SlackAuthorizedUser
+    public function getAuthorizedUser(SlackAccessToken $token): SlackResourceAuthorizedUser
     {
-        $response = $this->fetchAuthorizedUserDetails($token);
-        return $this->createAuthorizedUser($response);
-    }
-
-    /**
-     * @param $response
-     *
-     * @return SlackAuthorizedUser
-     */
-    protected function createAuthorizedUser($response): SlackAuthorizedUser
-    {
-        return new SlackAuthorizedUser($response);
+        return $this->fetchAuthorizedUserDetails($token);
     }
 
     /**

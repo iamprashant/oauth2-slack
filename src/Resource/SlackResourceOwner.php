@@ -1,6 +1,6 @@
 <?php
 
-namespace IamPrashant\OAuth2\Client\Provider;
+namespace IamPrashant\OAuth2\Client\Resource;
 
 use League\OAuth2\Client\Provider\ResourceOwnerInterface;
 
@@ -252,7 +252,10 @@ class SlackResourceOwner implements ResourceOwnerInterface
      */
     public function getProfile()
     {
-        return $this->response['user']["profile"] ?: null;
+        if (array_key_exists('user', $this->response) && array_key_exists('profile', $this->response['user'])) {
+            return $this->response['user']["profile"] ?: null;
+        }
+
     }
 
 }

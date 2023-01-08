@@ -2,6 +2,7 @@
 
 namespace IamPrashant\OAuth2\Client\Token;
 
+use IamPrashant\OAuth2\Client\Resource\SlackResourceAuthorizedUser;
 use InvalidArgumentException;
 use League\OAuth2\Client\Token\AccessToken;
 
@@ -58,6 +59,11 @@ class SlackAccessToken extends AccessToken
      */
     protected $team_id;
 
+    /**
+     * @var SlackResourceAuthorizedUser
+     */
+    protected $authed_user;
+
     public function __construct(array $options)
     {
 
@@ -103,8 +109,20 @@ class SlackAccessToken extends AccessToken
 
         }
 
+        if (!empty($options['authed_user'])) {
+            $this->authed_user = new SlackResourceAuthorizedUser($options['authed_user']);
+        }
+
     }
 
+    /**
+     *
+     * @return SlackResourceAuthorizedUser
+     */
+    public function getAuthedUser(): SlackResourceAuthorizedUser
+    {
+        return $this->authed_user;
+    }
     /**
      *
      * @return bool

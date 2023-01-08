@@ -132,42 +132,28 @@ class SlackTest extends TestCase
 
     public function testGetAuthorizedUserDetails()
     {
-        $url = uniqid();
-        $team = uniqid();
-        $userName = uniqid();
-        $teamId = uniqid();
-        $userId = uniqid();
+
+        $authed_user_token = "user-token";
+        $token_type = "user";
+        $user_id = uniqid();
 
         $postResponse = m::mock('Psr\Http\Message\ResponseInterface');
-        $postResponse->shouldReceive('getBody')->andReturn('{"ok": true, "scope": "commands,users:read.email,users:read","access_token": "sample-token-0","enterprise": null,"is_enterprise_install": false}');
+        $postResponse->shouldReceive('getBody')->andReturn('{"ok": true, "scope": "commands,users:read.email,users:read","access_token": "sample-token-0","enterprise": null,"is_enterprise_install": false, "authed_user":{"id":"' . $user_id . '","scope":"im:history,users:read,users:read.email,users.profile:read","access_token":"' . $authed_user_token . '","token_type":"' . $token_type . '"}}');
         $postResponse->shouldReceive('getHeader')->andReturn(['content-type' => 'json']);
         $postResponse->shouldReceive('getStatusCode')->andReturn(200);
-
-        $userResponse = m::mock('Psr\Http\Message\ResponseInterface');
-        $userResponse->shouldReceive('getBody')->andReturn('{"ok": true,"url": "' . $url . '","user": "' . $userName . '","team": "' . $team . '","team_id": "' . $teamId . '","user_id": "' . $userId . '"}');
-        $userResponse->shouldReceive('getHeader')->andReturn(['content-type' => 'json']);
-        $userResponse->shouldReceive('getStatusCode')->andReturn(200);
-
         $client = m::mock('GuzzleHttp\ClientInterface');
         $client->shouldReceive('send')
-            ->times(2)
-            ->andReturn($postResponse, $userResponse);
+            ->times(1)
+            ->andReturn($postResponse);
         $this->oAuthProvider->setHttpClient($client);
 
         $token = $this->oAuthProvider->getAccessToken('authorization_code', ['code' => 'sample-authorization_code']);
         $user = $this->oAuthProvider->getAuthorizedUser($token);
 
-        $this->assertEquals($userId, $user->getId());
-        $this->assertEquals($url, $user->getUrl());
-        $this->assertEquals($url, $user->toArray()['url']);
-        $this->assertEquals($team, $user->getTeam());
-        $this->assertEquals($team, $user->toArray()['team']);
-        $this->assertEquals($userName, $user->getUser());
-        $this->assertEquals($userName, $user->toArray()['user']);
-        $this->assertEquals($teamId, $user->getTeamId());
-        $this->assertEquals($teamId, $user->toArray()['team_id']);
-        $this->assertEquals($userId, $user->getUserId());
-        $this->assertEquals($userId, $user->toArray()['user_id']);
+        $this->assertEquals($user_id, $user->getId());
+        $this->assertEquals($token_type, $user->getTokenType());
+        $this->assertEquals($authed_user_token, $user->getAccessToken());
+
     }
 
     public function testGetResourceOwnerDetails()
@@ -195,26 +181,10 @@ class SlackTest extends TestCase
         $has2FA = true;
         $hasFiles = true;
 
-        $url = uniqid();
-        $userName = uniqid();
-        $team = uniqid();
-        $teamId = uniqid();
-        $userId = uniqid();
-
         $accessTokenResponse = m::mock('Psr\Http\Message\ResponseInterface');
-        $accessTokenResponse->shouldReceive('getBody')->andReturn('{"ok": true, "scope": "commands,users:read.email,users:read","access_token": "sample-token-0","enterprise": null,"is_enterprise_install": false}');
+        $accessTokenResponse->shouldReceive('getBody')->andReturn('{"ok": true, "scope": "commands,users:read.email,users:read","access_token": "sample-token-0","enterprise": null,"is_enterprise_install": false, "authed_user":{"id":"xx","scope":"im:history,users:read,users:read.email,users.profile:read","access_token":"authed_user_token","token_type":"user"}}');
         $accessTokenResponse->shouldReceive('getHeader')->andReturn(['content-type' => 'json']);
         $accessTokenResponse->shouldReceive('getStatusCode')->andReturn(200);
-
-        $authUser = m::mock('Psr\Http\Message\ResponseInterface');
-        $authUser->shouldReceive('getBody')->andReturn('{"ok": true,"url": "' . $url . '","user": "' . $userName . '","team": "' . $team . '","team_id": "' . $teamId . '","user_id": "' . $userId . '"}');
-        $authUser->shouldReceive('getHeader')->andReturn(['content-type' => 'json']);
-        $authUser->shouldReceive('getStatusCode')->andReturn(200);
-
-        $authUserResponse = m::mock('Psr\Http\Message\ResponseInterface');
-        $authUserResponse->shouldReceive('getBody')->andReturn('{"ok": true,"url": "' . $url . '","team": "' . $team . '","user": "' . $userName . '","team_id": "' . $teamId . '","user_id": "' . $userId . '"}');
-        $authUserResponse->shouldReceive('getHeader')->andReturn(['content-type' => 'json']);
-        $authUserResponse->shouldReceive('getStatusCode')->andReturn(200);
 
         $userResponse = m::mock('Psr\Http\Message\ResponseInterface');
         $userResponse->shouldReceive('getBody')->andReturn('{"ok": true,"user": {"id": "' . $id . '","name": "' . $name . '","deleted": false,"color": "' . $color . '","profile": {"first_name": "' . $profile["first_name"] . '","last_name": "' . $profile["last_name"] . '","real_name": "' . $profile["real_name"] . '","email": "' . $profile["email"] . '","skype": "' . $profile["skype"] . '","phone": "' . $profile["phone"] . '","image_24": "' . $profile["image_24"] . '","image_32": "' . $profile["image_32"] . '","image_48": "' . $profile["image_48"] . '","image_72": "' . $profile["image_72"] . '","image_192": "' . $profile["image_192"] . '"},"is_admin": true,"is_owner": true,"has_2fa": true,"has_files": true}}');
@@ -223,8 +193,8 @@ class SlackTest extends TestCase
 
         $client = m::mock('GuzzleHttp\ClientInterface');
         $client->shouldReceive('send')
-            ->times(3)
-            ->andReturn($accessTokenResponse, $authUserResponse, $userResponse);
+            ->times(2)
+            ->andReturn($accessTokenResponse, $userResponse);
         $this->oAuthProvider->setHttpClient($client);
 
         $token = $this->oAuthProvider->getAccessToken('authorization_code', ['code' => 'sample-authorization_code']);
